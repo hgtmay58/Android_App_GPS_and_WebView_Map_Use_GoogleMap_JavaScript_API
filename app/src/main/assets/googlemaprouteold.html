@@ -1,0 +1,206 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+            <meta name="viewport" content="width=device-width">
+            <meta name="decorator" content="minimal">
+                <meta charset="utf-8">
+                    <title>Google Map Service</title>
+                    <script type="text/javascript" src=file:///android_asset/jquery-1.4.2.min.js></script>
+
+                    <style type="text/css">
+                        #map-page {
+                            width:100%;
+                            height:100%;
+                        }
+                    
+                    #right-panel {
+                        font-family: 'Roboto','sans-serif';
+                        line-height: 30px;
+                        padding-left: 10px;
+                    }
+                    
+                    #right-panel select, #right-panel input {
+                        font-size: 15px;
+                    }
+                    
+                    #right-panel select {
+                        width: 100%;
+                    }
+                    
+                    #right-panel i {
+                        font-size: 12px;
+                    }
+                    
+                    html, body {
+                        height: 100%;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    
+                    #map {
+                        height: 100%;
+                        float: left;
+                        width: 0%;
+                        height: 100%;
+                    }
+                    
+                    #right-panel {
+                        float: right;
+                        width: 100%;
+                        height: 100%;
+                    }
+                    
+                    input[type="radio"] {
+                        display: none;
+                    }
+                    
+                    input[type="radio"] + label img {
+                        display: inline-block;
+                        vertical-align: left;
+                        width: 30vw;
+                        height: auto;
+                    }
+                    
+                    /* Hiding radio button */
+                    input[type='radio'] {
+                        display:none;
+                    }
+                    /* Hiding second image in label tags */
+                    label.label_item > img:nth-child(2) {
+                        display:none;
+                    }
+                    /* When radio-button is checked, display second image in the following label tag */
+                    input[type='radio']:checked + label.label_item > img:nth-child(1) {
+                        display:none;
+                    }
+                    
+                    input[type='radio']:checked + label.label_item > img:nth-child(2) {
+                        display: inline-block;
+                        vertical-align: left;
+                        width: 30vw;
+                        height: auto;
+                    }
+                    
+                    form {
+                        display: inline;
+                        padding-left: 10px;
+                    }
+                    
+                        </style>
+                    </head>
+    <body>
+      
+        <div data-role="page" id="map-page" data-url="map-page">
+         <a href="back:"><img src=file:///android_asset/sunloctitle2dx.png width=100%></a>
+            <form id="mode">
+                <input type="radio" class="selectCls" name="travel"  value="DRIVING" id="DRIVING" checked>
+                    <label class="label_item" for="DRIVING">
+                        <img  src="file:///android_asset/btn_car_disable.png">
+                            <img  src="file:///android_asset/btn_car_active.png">
+                                </label>
+                    <input type="radio" class="selectCls" name="travel"  value="WALKING" id="WALKING">
+                        <label class="label_item" for="WALKING">
+                            <img  src="file:///android_asset/btn_walk_disable.png">
+                                <img  src="file:///android_asset/btn_walk_active.png">
+                                    </label>
+                        <input type="radio" class="selectCls" name="travel"  value="TRANSIT" id="TRANSIT">
+                            <label class="label_item" for="TRANSIT">
+                                <img  src="file:///android_asset/btn_bus_disable.png">
+                                    <img  src="file:///android_asset/btn_bus_active.png">
+                                        </label>
+                            </form>
+            <div id="map"></div>
+            <div id="right-panel">  
+            </div>
+        </div>
+        <script>
+            var directionsService;
+            var directionsDisplay;
+            var originLat;
+            var originLng;
+            var destinationLat;
+            var destinationLng;
+
+            function getPosition(oLat,oLng,dLat,dLng){
+                originLat = oLat;
+                originLng = oLng;
+                destinationLat = dLat;
+                destinationLng = dLng;
+				initMap();
+            }
+            function initMap() {
+			
+                var map = new google.maps.Map(document.getElementById('map'), {
+                                              zoom: 10,
+                                              center:  {lat: originLat, lng: originLng}
+                                              });
+                                              
+                                              directionsService = new google.maps.DirectionsService;
+                                              directionsDisplay = new google.maps.DirectionsRenderer({
+                                                                                                         draggable: true,
+                                                                                                         map: map,
+                                                                                                         panel: document.getElementById('right-panel')
+                                                                                                         });
+                                                                                                         
+                                                                                                         document.getElementById('mode').addEventListener('change', function() {
+                                                                                                                                                          displayRoute(new google.maps.LatLng(originLat,originLng),
+                                                                                                                                                                       new google.maps.LatLng(destinationLat,destinationLng),
+                                                                                                                                                                       directionsService,
+                                                                                                                                                                       directionsDisplay);
+                                                                                                                                                          });
+                                                                                                                                                          
+                                                      displayRoute(
+                                                                                                                                                                       new google.maps.LatLng(originLat,originLng),
+                                                                                                                                                                       new google.maps.LatLng(destinationLat,destinationLng),
+                                                                                                                                                                       directionsService,
+                                                                                                                                                                       directionsDisplay,
+                                                                                                                                                                       google.maps.TravelMode.DRIVING
+                                                                                                                                                                       );
+            }
+        
+        function displayRoute(origin, destination, service, display,mode) {
+            service.route({
+                          origin: origin,
+                          destination: destination,
+                          travelMode: mode,
+                          avoidTolls: true
+                          }, function(response, status) {
+                          if (status === google.maps.DirectionsStatus.OK) {
+                          display.setDirections(response);
+                          } else {
+                       //   alert('Could not display directions due to: ' + status);
+                          }
+                          });
+        }
+        
+        $(function() {
+          
+          
+          $('.selectCls').click(function() {
+                                
+                                var c = google.maps.TravelMode.DRIVING;
+                                if ('DRIVING' == $(this).val()) {
+                                c = google.maps.TravelMode.DRIVING;
+                                } else if ('WALKING' == $(this).val()) {
+                                c = google.maps.TravelMode.WALKING;
+                                } else {
+                                c = google.maps.TravelMode.TRANSIT;
+                                }
+                                displayRoute(
+                                             new google.maps.LatLng(originLat,originLng),
+                                             new google.maps.LatLng(destinationLat,destinationLng),
+                                             directionsService,
+                                             directionsDisplay,
+                                             c);
+                                
+                                });
+          
+          });
+        </script>
+        <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBRF0lCmd_17JAcoL5BSgTx9wcYiMSg3PM&callback=initMap">
+          //     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC49N3Hd5NtMQjSM2dpFmgr0Ny05wbV5iE">
+            </script>
+    </body>
+</html>
